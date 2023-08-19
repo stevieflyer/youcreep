@@ -18,4 +18,5 @@ setup(
     description='A powerful, asynchronous web crawler designed specifically for YouTube.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
+
 )
