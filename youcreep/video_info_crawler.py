@@ -21,6 +21,7 @@ class YoutubeVideoInfoCrawler(YoutubeBaseCrawler):
                 await self._browser_agent.filter_search_result(filter_section=filter_section, filter_option=filter_option)
                 # wait for the page to load
                 time.sleep(1.5)
+
         # load the search result
         video_card_elem_list = await self._browser_agent.scroll_load_video_cards(n_target=n_target)
         # Parse and get the video info
