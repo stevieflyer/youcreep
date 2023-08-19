@@ -1,4 +1,4 @@
-# YouTube Crawler
+# Youcreep
 
 A powerful, asynchronous web crawler designed specifically for YouTube. Built to efficiently interact with web pages in a headless mode, this tool facilitates the seamless extraction of YouTube video comments and video information directly from the platform.
 
@@ -12,7 +12,7 @@ A powerful, asynchronous web crawler designed specifically for YouTube. Built to
 
 ### 1. YoutubeCommentCrawler
 
-Extract comments from any given YouTube video. 
+Extract comments from any given YouTube video.
 
 #### Usage:
 
@@ -41,25 +41,22 @@ with YoutubeVideoInfoCrawler() as crawler:
 
 1. **Clone the repository**
 
-    ```bash
-    git clone https://github.com/stevieflyer/youtube_crawler.git
-    ```
-
+   ```bash
+   git clone https://github.com/stevieflyer/youtube_crawler.git
+   ```
 2. **Navigate to the project directory**
 
-    ```bash
-    cd youcreep
-    ```
-
+   ```bash
+   cd youcreep
+   ```
 3. **Install the dependencies**
 
-    ```bash
-    pip install -r requirements.txt
-    ```
-
+   ```bash
+   pip install -r requirements.txt
+   ```
 4. **Start crawling**
 
-    Use the examples provided in the modules section above.
+   Use the examples provided in the modules section above.
 
 ## Contributing
 
@@ -70,5 +67,3 @@ Contributions are welcome! Please raise an issue or submit a pull request.
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 Happy crawling! :)
-    
-
