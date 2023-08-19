@@ -1,3 +1,4 @@
+import time
 from typing import List
 
 from .dao.pojo import VideoInfo
@@ -16,7 +17,10 @@ class YoutubeVideoInfoCrawler(YoutubeBaseCrawler):
         # filter the search result
         if filter_options is not None:
             for filter_section, filter_option in filter_options.items():
+                self._browser_agent.debug_tool.info(f"Filtering the search result by {filter_section} -> {filter_option}")
                 await self._browser_agent.filter_search_result(filter_section=filter_section, filter_option=filter_option)
+                # wait for the page to load
+                time.sleep(1.5)
         # load the search result
         video_card_elem_list = await self._browser_agent.scroll_load_video_cards(n_target=n_target)
         # Parse and get the video info
