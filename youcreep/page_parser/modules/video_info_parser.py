@@ -2,7 +2,7 @@ from deprecated import deprecated
 from pyppeteer.element_handle import ElementHandle
 
 from .url_parser import YoutubeUrlParser
-from youtube_crawler.dao.pojo import VideoInfo
+from youcreep.dao.pojo import VideoInfo
 from ._base_page_parser import BaseParserHandler
 
 

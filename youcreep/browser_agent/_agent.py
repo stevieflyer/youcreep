@@ -3,10 +3,10 @@ from typing import List
 import pyppeteer.element_handle
 from zephyrion.pypp import PyppeteerAgent
 
-from youtube_crawler.config.filter_enum import FilterSection
-from youtube_crawler.page_parser.selectors.common import search_input_sel, clear_input_btn_selector, search_submit_sel
-from youtube_crawler.page_parser.selectors.search_result_page import filter_toggle_sel, filter_section_sel, filter_option_sel
-from youtube_crawler.page_parser.modules.url_parser import YoutubeUrlParser
+from youcreep.config.filter_enum import FilterSection
+from youcreep.page_parser.selectors.common import search_input_sel, clear_input_btn_selector, search_submit_sel
+from youcreep.page_parser.selectors.search_result_page import filter_toggle_sel, filter_section_sel, filter_option_sel
+from youcreep.page_parser.modules.url_parser import YoutubeUrlParser
 
 
 class YoutubeBrowserAgent(PyppeteerAgent):

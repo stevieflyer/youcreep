@@ -4,8 +4,8 @@ from typing import Union
 
 from gembox.debug_utils import Debugger
 
-from youtube_crawler.page_parser import YoutubePageParser
-from youtube_crawler.browser_agent import YoutubeBrowserAgent
+from youcreep.page_parser import YoutubePageParser
+from youcreep.browser_agent import YoutubeBrowserAgent
 
 
 class YoutubeBaseCrawler:

@@ -17,10 +17,10 @@ Extract comments from any given YouTube video.
 #### Usage:
 
 ```python
-from youtube_crawler import YoutubeCommentCrawler
+from youcreep import YoutubeCommentCrawler
 
 with YoutubeCommentCrawler() as crawler:
-    comments = await crawler.crawl('YOUR_YOUTUBE_VIDEO_URL', n_target=NUMBER_OF_COMMENTS_TO_FETCH)
+   comments = await crawler.crawl('YOUR_YOUTUBE_VIDEO_URL', n_target=NUMBER_OF_COMMENTS_TO_FETCH)
 ```
 
 ### 2. YoutubeVideoInfoCrawler
@@ -30,10 +30,11 @@ Search for videos based on a keyword and extract their information.
 #### Usage:
 
 ```python
-from youtube_crawler import YoutubeVideoInfoCrawler
+from youcreep import YoutubeVideoInfoCrawler
 
 with YoutubeVideoInfoCrawler() as crawler:
-    videos_info = await crawler.crawl('YOUR_SEARCH_TERM', n_target=NUMBER_OF_VIDEOS_TO_FETCH, filter_options=YOUR_FILTER_OPTIONS)
+   videos_info = await crawler.crawl('YOUR_SEARCH_TERM', n_target=NUMBER_OF_VIDEOS_TO_FETCH,
+                                     filter_options=YOUR_FILTER_OPTIONS)
 ```
 
 ## Getting Started
@@ -47,7 +48,7 @@ with YoutubeVideoInfoCrawler() as crawler:
 2. **Navigate to the project directory**
 
     ```bash
-    cd youtube_crawler
+    cd youcreep
     ```
 
 3. **Install the dependencies**
