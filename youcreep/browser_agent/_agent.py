@@ -137,7 +137,37 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         :return: (int) The number of comments loaded.
         """
         comment_selector = "ytd-comment-renderer"
-        return await self.page_interactor.scroll_load_selector(selector=comment_selector, threshold=n_target, same_th=100)
+
+        async def scroll_callback():
+            js_code = '''() => {
+            const more_reply_btns = document.querySelectorAll("#more-replies > yt-button-shape > button > yt-touch-feedback-shape > div[aria-hidden='true']")
+            const more_btns = document.querySelectorAll("#button > ytd-button-renderer > yt-button-shape > button > yt-touch-feedback-shape > div")
+            console.log(more_reply_btns.length)
+            console.log("more_btns.length", more_btns.length)
+            for(more_reply_btn of more_reply_btns) {
+                more_reply_btn.click();
+            }
+            for(more_btn of more_btns) {
+                more_btn.click();
+            }
+        }'''
+            await self.page_interactor._page.evaluate(js_code)
+
+        return await self.page_interactor.scroll_load_selector(selector=comment_selector, threshold=n_target,
+                                                               same_th=100, scroll_step_callback=scroll_callback)
+
+    async def expand_all_replies(self):
+        """
+        Expand all replies.
+        """
+        await self.page_interactor._page.evaluate('''() => {
+            const more_reply_btns = document.querySelectorAll("#more-replies > yt-button-shape > button > yt-touch-feedback-shape > div[aria-hidden='true']")
+            console.log(more_reply_btns.length)
+            for(more_reply_btn of more_reply_btns) {
+                more_reply_btn.click();
+            }
+        }''')
+
 
 
 __all__ = ["YoutubeBrowserAgent"]
