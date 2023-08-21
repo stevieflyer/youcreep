@@ -6,3 +6,4 @@ setuptools~=67.8.0
 deprecated~=1.2.14
 youcreep~=0.1.4
 pandas~=1.5.3
+cetino~=0.1.3
