@@ -36,44 +36,38 @@ class YoutubeVideoInfoCrawler(YoutubeBaseCrawler):
         return video_card_list
 
     @classmethod
-    async def parallel_crawl(cls,
-                             search_term_list: List[str],
-                             n_target_list: List[int],
-                             output_dir: Union[pathlib.Path, str],
-                             filter_options_list: Optional[List[Dict]] = None,
-                             n_workers: int = 1,
-                             verbose: bool = False) -> None:
+    def required_fields(cls) -> Dict:
         """
-        Parallel crawl function for YoutubeVideoInfoCrawler.
-
-        :param search_term_list: List of search terms.
-        :param n_target_list: List of target number of results.
-        :param filter_options_list: List of filter options.
-        :param n_workers: Number of parallel workers.
-        :param output_dir: Directory to store the output data.
-        :param verbose: Whether to print the log.
+        - `search_term`: str
+        - `n_target`: int, target number of results, which may not be reached. If None, all results will be crawled.
+        - `output_dir`: Union[pathlib.Path, str]
         """
-        # 1. Parameter validation: param list must have the same length
-        if filter_options_list is None:
-            filter_options_list = [None] * len(search_term_list)
-        assert len(search_term_list) == len(n_target_list) == len(filter_options_list), "Lengths of the lists must be the same."
-        n = len(search_term_list)
+        return {
+            "search_term": str,
+            "n_target": int,
+            "output_dir": (pathlib.Path, str),
+        }
 
-        # 2. Create task parameters
-        task_params = [
-            {
-                "log_filename_func": lambda **kwargs: f"{kwargs['search_term']}_{kwargs['n_target']}_video_info.log",
-                "data_filename_func": lambda **kwargs: f"{kwargs['search_term']}_{kwargs['n_target']}_video_info.csv",
-                "output_dir": output_dir,
-                "verbose": verbose,
-                # children class specific parameters
-                "search_term": search_term_list[i],
-                "n_target": n_target_list[i],
-                "filter_options": filter_options_list[i],
-            }
-            for i in range(n)
-        ]
-        await cls._parallel_crawl_base(worker_fn=cls._generic_worker, task_params=task_params, n_workers=n_workers)
+    @classmethod
+    def optional_fields(cls) -> Dict:
+        """
+        - `filter_options`: dict, filter options for the search result.
+
+        e.g.
+        ```python
+        {
+            FilterSection.LENGTH: FilterLengthOption.MEDIUM,
+            FilterSection.ORDER_BY: FilterOrderByOption.VIEW_COUNT
+        }
+        ```
+        """
+        return {
+            "filter_options": (dict, None),
+        }
+
+    @classmethod
+    def _save_name(cls, _kw: dict) -> str:
+        return f"{_kw['search_term']}_{_kw['n_target']}_video_info"
 
 
 __all__ = ["YoutubeVideoInfoCrawler"]
