@@ -4,6 +4,9 @@ from youcreep._base_crawler import YoutubeBaseCrawler
 
 
 class YoutubeChannelCrawler(YoutubeBaseCrawler):
+    """
+    Crawler for channel infos on YouTube.
+    """
     def crawl(self, *args, **kwargs):
         raise NotImplementedError
 
