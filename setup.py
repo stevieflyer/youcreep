@@ -9,7 +9,7 @@ def read_requirements():
 
 setup(
     name='youcreep',
-    version='0.1.5',
+    version='0.1.10',
     packages=find_packages(exclude=['test', 'test.*']),
     install_requires=read_requirements(),
     url='https://github.com/stevieflyer/youtube_crawler',
@@ -18,5 +18,4 @@ setup(
     description='A powerful, asynchronous web crawler designed specifically for YouTube.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-
 )
