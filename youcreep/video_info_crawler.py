@@ -44,7 +44,7 @@ class YoutubeVideoInfoCrawler(YoutubeBaseCrawler):
         """
         return {
             "search_term": str,
-            "n_target": int,
+            "n_target": (int, None),
             "output_dir": (pathlib.Path, str),
         }
 

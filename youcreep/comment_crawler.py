@@ -32,7 +32,7 @@ class YoutubeCommentCrawler(YoutubeBaseCrawler):
         """
         return {
             "video_url": str,
-            "n_target": int,
+            "n_target": (int, None),
             "output_dir": (pathlib.Path, str),
         }
 
