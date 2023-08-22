@@ -123,7 +123,7 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         :return: (List[ElementHandle]) The list of video card elements.
         """
         video_selector = "ytd-video-renderer"
-        return await self.page_interactor.scroll_load_selector(selector=video_selector, threshold=n_target, same_th=100)
+        return await self.page_interactor.scroll_load_selector(selector=video_selector, threshold=n_target, same_th=50)
 
     async def scroll_load_comments(self, n_target: int) -> List[pyppeteer.element_handle.ElementHandle]:
         """
@@ -154,7 +154,7 @@ class YoutubeBrowserAgent(PyppeteerAgent):
             await self.page_interactor._page.evaluate(js_code)
 
         return await self.page_interactor.scroll_load_selector(selector=comment_selector, threshold=n_target,
-                                                               same_th=100, scroll_step_callback=scroll_callback)
+                                                               same_th=50, scroll_step_callback=scroll_callback)
 
     async def expand_all_replies(self):
         """
