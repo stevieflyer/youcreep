@@ -58,7 +58,7 @@ class YoutubeBaseCrawler:
         for param_dict in param_dict_list:
             for key, value in param_dict.items():
                 assert key in required_fields or key in optional_fields, f"Invalid parameter key {key}, required fields are {required_fields.keys()}, optional fields are {optional_fields.keys()}."
-                assert (all_fields[key] is None and value is None) or isinstance(value, all_fields[key]), f"Invalid parameter type for key {key}, expected type is {all_fields[key]}, got {type(value)}."
+                assert isinstance(value, all_fields[key]), f"Invalid parameter type for key {key}, expected type is {all_fields[key]}, got {type(value)}."
 
         # 获取除去了 output_dir 的 **kwargs
         _kwargs = {key: value for key, value in param_dict_list[0].items() if key != "output_dir"}
