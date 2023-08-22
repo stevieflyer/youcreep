@@ -9,7 +9,7 @@ from gembox.debug_utils import Debugger, FileConsoleDebugger, FileDebugger
 
 from youcreep.page_parser import YoutubePageParser
 from youcreep.browser_agent import YoutubeBrowserAgent
-from gembox.multiprocess.mp_async import AsyncTask, ParallelAsyncRunner
+from gembox.multiprocess.mp_async import Task, ParallelExecutor
 
 
 class YoutubeBaseCrawler:
@@ -62,13 +62,12 @@ class YoutubeBaseCrawler:
 
         # 获取除去了 output_dir 的 **kwargs
         _kwargs = {key: value for key, value in param_dict_list[0].items() if key != "output_dir"}
-        file_name = "".join([f"{key}_{value}_" for key, value in _kwargs.items()]) + cls.__name__.lower()
 
         # 2. Create task parameters
         task_params = [
             {
-                "log_filename_func": lambda **kwargs: f"{cls._save_name(kwargs)}.log",
-                "data_filename_func": lambda **kwargs: f"{cls._save_name(kwargs)}.csv",
+                "log_filename_func": cls._log_filename_func,
+                "data_filename_func": cls._data_filename_func,
                 "verbose": verbose,
                 "headless": headless,
                 # children class specific parameters
@@ -81,8 +80,8 @@ class YoutubeBaseCrawler:
 
     @classmethod
     async def _parallel_crawl_base(cls, worker_fn, task_params, n_workers=1):
-        tasks = [AsyncTask(worker_fn, params=params) for params in task_params]
-        await ParallelAsyncRunner.run(tasks, n_workers=n_workers)
+        tasks = [Task(worker_fn, params=params) for params in task_params]
+        await ParallelExecutor.run(tasks, n_workers=n_workers)
 
     @classmethod
     async def _generic_worker(cls,
@@ -152,6 +151,14 @@ class YoutubeBaseCrawler:
         _kwargs = {key: value for key, value in _kw.items() if key != "output_dir"}
         file_name = "".join([f"{key}_{value}_" for key, value in _kwargs.items()]) + cls.__name__.lower()
         return file_name
+
+    @classmethod
+    def _log_filename_func(cls, **kwargs):
+        return f"{cls._save_name(kwargs)}.log"
+
+    @classmethod
+    def _data_filename_func(cls, **kwargs):
+        return f"{cls._save_name(kwargs)}.csv"
 
     async def __aenter__(self):
         await self.start()
