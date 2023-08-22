@@ -49,3 +49,12 @@ class FilterOrderByOption(enum.Enum):
     UPLOAD_DATE = 1
     VIEW_COUNT = 2
     RATING = 3
+
+
+SECTION_OPTION_DICT = {
+    FilterSection.PUBLISH_DATE: FilterPublishDateOption,
+    FilterSection.TYPE: FilterTypeOption,
+    FilterSection.LENGTH: FilterLengthOption,
+    FilterSection.FUNCTION: FilterFunctionOption,
+    FilterSection.ORDER_BY: FilterOrderByOption
+}
