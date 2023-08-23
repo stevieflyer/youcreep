@@ -1,11 +1,11 @@
-from typing import List
+from typing import List, Callable
 
 import pyppeteer.element_handle
 from zephyrion.pypp import PyppeteerAgent
 
 from youcreep.config.filter_enum import FilterSection
 from youcreep.page_parser.selectors.common import search_input_sel, clear_input_btn_selector, search_submit_sel, \
-    dismiss_premium_btn
+    dismiss_premium_btn, comment_card_sel, video_card_sel
 from youcreep.page_parser.selectors.search_result_page import filter_toggle_sel, filter_section_sel, filter_option_sel
 from youcreep.page_parser.modules.url_parser import YoutubeUrlParser
 
@@ -79,7 +79,7 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         # 1. clear the input
         try:
             await self.page_interactor.click(selector=clear_input_btn_selector)
-        except:
+        except Exception:
             pass
 
         # 2. type the input
@@ -114,7 +114,7 @@ class YoutubeBrowserAgent(PyppeteerAgent):
             f"Filtering searching result, filter_section_title: {filter_title}, option: {option_text}")
         await filter_option_elem.click()
 
-    async def scroll_load_video_cards(self, n_target: int) -> List[pyppeteer.element_handle.ElementHandle]:
+    async def scroll_load_video_cards(self, n_target: int, callbacks: List[Callable]) -> List[pyppeteer.element_handle.ElementHandle]:
         """
         Scroll down to load more video cards.
 
@@ -123,18 +123,19 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         @out_page: search result page
 
         :param n_target: (int) The target number of video cards to load.
+        :param callbacks: (List[Callable]) The callback function to call after each scroll step.
         :return: (List[ElementHandle]) The list of video card elements.
         """
-        video_selector = "ytd-video-renderer"
-        video_list = await self.page_interactor.scroll_load_selector(selector=video_selector, threshold=n_target,
-                                                                     same_th=50)
+        video_list = await self.page_interactor.scroll_load_selector(selector=video_card_sel, threshold=n_target,
+                                                                     scroll_step=800, same_th=50,
+                                                                     scroll_step_callbacks=callbacks)
 
         if n_target is not None:
             video_list = video_list[:n_target]
 
         return video_list
 
-    async def scroll_load_comments(self, n_target: int) -> List[pyppeteer.element_handle.ElementHandle]:
+    async def scroll_load_comments(self, n_target: int, callbacks: List[Callable]) -> List[pyppeteer.element_handle.ElementHandle]:
         """
         Scroll down to load more comments.
 
@@ -143,13 +144,16 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         @out_page: video page
 
         :param n_target: (int) The target number of comments to load.
+        :param callbacks: (List[Callable]) The callback function to call after each scroll step.
         :return: (int) The number of comments loaded.
         """
-        comment_selector = "ytd-comment-renderer"
+        default_callbacks = [self.expand_all_replies]
+        if callbacks is not None:
+            default_callbacks.extend(callbacks)
 
-        comment_list = await self.page_interactor.scroll_load_selector(selector=comment_selector, threshold=n_target,
+        comment_list = await self.page_interactor.scroll_load_selector(selector=comment_card_sel, threshold=n_target,
                                                                        scroll_step=800, same_th=50,
-                                                                       scroll_step_callback=self.expand_all_replies)
+                                                                       scroll_step_callbacks=default_callbacks)
 
         if n_target is not None:
             comment_list = comment_list[:n_target]
@@ -191,8 +195,8 @@ class YoutubeBrowserAgent(PyppeteerAgent):
             btn = await self.page_interactor.get_element(selector=dismiss_premium_btn)
 
             await btn.click()
-        except:
-            pass
+        except Exception:
+            self.debug_tool.warn(f"Failed to dismiss premium modal.")
 
 
 __all__ = ["YoutubeBrowserAgent"]
