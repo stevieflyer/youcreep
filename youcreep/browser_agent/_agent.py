@@ -114,7 +114,7 @@ class YoutubeBrowserAgent(PyppeteerAgent):
             f"Filtering searching result, filter_section_title: {filter_title}, option: {option_text}")
         await filter_option_elem.click()
 
-    async def scroll_load_video_cards(self, n_target: int, callbacks: List[Callable]) -> List[pyppeteer.element_handle.ElementHandle]:
+    async def scroll_load_video_cards(self, n_target: int, callbacks: List[Callable] = None) -> List[pyppeteer.element_handle.ElementHandle]:
         """
         Scroll down to load more video cards.
 
@@ -135,7 +135,7 @@ class YoutubeBrowserAgent(PyppeteerAgent):
 
         return video_list
 
-    async def scroll_load_comments(self, n_target: int, callbacks: List[Callable]) -> List[pyppeteer.element_handle.ElementHandle]:
+    async def scroll_load_comments(self, n_target: int, callbacks: List[Callable] = None) -> List[pyppeteer.element_handle.ElementHandle]:
         """
         Scroll down to load more comments.
 
