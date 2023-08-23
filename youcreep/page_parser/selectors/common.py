@@ -19,3 +19,4 @@ search_submit_sel = "#search-icon-legacy"
 """search submit button"""
 
 dismiss_premium_btn = "#dismiss-button > yt-button-renderer > yt-button-shape > button"
+"""dismiss premium modal button"""

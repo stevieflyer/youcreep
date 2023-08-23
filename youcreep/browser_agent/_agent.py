@@ -4,7 +4,7 @@ import pyppeteer.element_handle
 from zephyrion.pypp import PyppeteerAgent
 
 from youcreep.config.filter_enum import FilterSection
-from youcreep.page_parser.selectors.common import search_input_sel, clear_input_btn_selector, search_submit_sel
+from youcreep.page_parser.selectors.common import search_input_sel, clear_input_btn_selector, search_submit_sel, dismiss_premium_btn
 from youcreep.page_parser.selectors.search_result_page import filter_toggle_sel, filter_section_sel, filter_option_sel
 from youcreep.page_parser.modules.url_parser import YoutubeUrlParser
 
@@ -30,6 +30,8 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         """
         await super().start()
         await self.browser_manager.go(self.home_page)
+        # set viewport
+        await self.page_interactor.set_viewport(width=1920, height=1080)
 
     async def stop(self) -> None:
         """
@@ -138,36 +140,46 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         """
         comment_selector = "ytd-comment-renderer"
 
-        async def scroll_callback():
-            js_code = '''() => {
-            const more_reply_btns = document.querySelectorAll("#more-replies > yt-button-shape > button > yt-touch-feedback-shape > div[aria-hidden='true']")
-            const more_btns = document.querySelectorAll("#button > ytd-button-renderer > yt-button-shape > button > yt-touch-feedback-shape > div")
-            console.log(more_reply_btns.length)
-            console.log("more_btns.length", more_btns.length)
-            for(more_reply_btn of more_reply_btns) {
-                more_reply_btn.click();
-            }
-            for(more_btn of more_btns) {
-                more_btn.click();
-            }
-        }'''
-            await self.page_interactor._page.evaluate(js_code)
-
         return await self.page_interactor.scroll_load_selector(selector=comment_selector, threshold=n_target,
-                                                               same_th=50, scroll_step_callback=scroll_callback)
+                                                               scroll_step=800, same_th=50, scroll_step_callback=self.expand_all_replies)
 
     async def expand_all_replies(self):
         """
         Expand all replies.
+
+        The native javascript code generally:
+
+        - get the last 10 `more_reply_btns` and `more_btns`
+        - click on each of them
         """
-        await self.page_interactor._page.evaluate('''() => {
-            const more_reply_btns = document.querySelectorAll("#more-replies > yt-button-shape > button > yt-touch-feedback-shape > div[aria-hidden='true']")
-            console.log(more_reply_btns.length)
-            for(more_reply_btn of more_reply_btns) {
+        js_code = '''() => {
+            let more_reply_btns = Array.from(document.querySelectorAll("#more-replies > yt-button-shape > button > yt-touch-feedback-shape > div[aria-hidden='true']")).slice(-10);
+            let more_btns = Array.from(document.querySelectorAll("#button > ytd-button-renderer > yt-button-shape > button > yt-touch-feedback-shape > div")).slice(-10);
+
+            console.log(`more_reply_btns.length: ${more_reply_btns.length}`);
+            console.log(`more_btns.length: ${more_btns.length}`);
+
+            for(const more_reply_btn of more_reply_btns) {
                 more_reply_btn.click();
             }
-        }''')
+            for(const more_btn of more_btns) {
+                more_btn.click();
+            }
+        }'''
+        await self.page_interactor._page.evaluate(js_code)
 
+    async def dismiss_premium_modal(self):
+        """
+        Dismiss the premium modal.
+
+        :return:
+        """
+        try:
+            btn = await self.page_interactor.get_element(selector=dismiss_premium_btn)
+
+            await btn.click()
+        except:
+            pass
 
 
 __all__ = ["YoutubeBrowserAgent"]

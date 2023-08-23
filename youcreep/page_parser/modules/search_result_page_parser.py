@@ -6,7 +6,7 @@ from youcreep.dao.pojo import VideoInfo
 from ._base_page_parser import BaseParserHandler
 
 
-class VideoInfoParser(BaseParserHandler):
+class SearchResultPageParser(BaseParserHandler):
     """
     Parser Handler for retrieving video info from video card element.
     """
@@ -72,4 +72,4 @@ class VideoInfoParser(BaseParserHandler):
         return 'SHORTS' in text
 
 
-__all__ = ["VideoInfoParser"]
+__all__ = ["SearchResultPageParser"]

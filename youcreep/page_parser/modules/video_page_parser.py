@@ -1,15 +1,22 @@
 import pyppeteer.element_handle
 
 from .url_parser import YoutubeUrlParser
-from ._base_page_parser import BaseParserHandler
 from youcreep.dao.pojo import VideoComment
+from ._base_page_parser import BaseParserHandler
+from youcreep.page_parser.selectors.video_page import view_count_sel, comment_count_sel
 
 
-class VideoCommentParser(BaseParserHandler):
+class VideoPageParser(BaseParserHandler):
     """
     Parser Handler for retrieving video comment from video comment element.
     """
-    async def parse(self, comment_card: pyppeteer.element_handle.ElementHandle) -> VideoComment:
+    async def parse_comment_card(self, comment_card: pyppeteer.element_handle.ElementHandle) -> VideoComment:
+        """
+        Parse comment info from comment card element listed in the video page.
+
+        :param comment_card: (pyppeteer.element_handle.ElementHandle) comment card element
+        :return: (VideoComment) comment info
+        """
         data_dict = {}
 
         is_reply = await self._is_reply(comment_card)
@@ -52,6 +59,27 @@ class VideoCommentParser(BaseParserHandler):
 
         return VideoComment.from_dict(data_dict)
 
+    async def parse_meta_info(self):
+        """
+        Read meta info from the video detail page. (This method should be called after the first few comments are loaded)
+
+        :return: (dict) meta info
+        """
+        try:
+            view_count = (await self.agent.get_texts(view_count_sel))[0].strip()
+        except:
+            view_count = None
+            self.agent.debug_tool.warn(f"Could not find view count for video {self.agent.url}")
+        try:
+            comment_count = (await self.agent.get_texts(comment_count_sel))[0].strip()
+        except:
+            comment_count = None
+            self.agent.debug_tool.warn(f"Could not find comment count for video {self.agent.url}")
+        return {
+            "view_count": view_count,
+            "comment_count": comment_count,
+        }
+
     async def _is_reply(self, comment_card: pyppeteer.element_handle.ElementHandle) -> bool:
         """
         Check if the comment is a reply to another comment.
@@ -64,4 +92,4 @@ class VideoCommentParser(BaseParserHandler):
         return is_reply
 
 
-__all__ = ["VideoCommentParser"]
+__all__ = ["VideoPageParser"]

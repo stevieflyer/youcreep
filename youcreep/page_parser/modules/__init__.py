@@ -1,3 +1,3 @@
-from .video_info_parser import VideoInfoParser
-from .video_comment_parser import VideoCommentParser
+from .search_result_page_parser import SearchResultPageParser
+from .video_page_parser import VideoPageParser
 from .url_parser import YoutubeUrlParser

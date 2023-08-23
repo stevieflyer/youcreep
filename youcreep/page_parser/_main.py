@@ -2,7 +2,7 @@ import pyppeteer.element_handle
 
 from ..dao.pojo import VideoInfo, VideoComment
 from ..browser_agent import YoutubeBrowserAgent
-from .modules import VideoInfoParser, VideoCommentParser
+from .modules import SearchResultPageParser, VideoPageParser, YoutubeUrlParser
 
 
 class YoutubePageParser:
@@ -13,8 +13,8 @@ class YoutubePageParser:
     Currently, the parser relies on `pyppeteer` module to support efficient element manipulation.
     """
     def __init__(self, browser_agent: YoutubeBrowserAgent):
-        self._video_info_parser = VideoInfoParser(agent=browser_agent)
-        self._video_comment_parser = VideoCommentParser(agent=browser_agent)
+        self._video_info_parser = SearchResultPageParser(agent=browser_agent)
+        self._video_comment_parser = VideoPageParser(agent=browser_agent)
 
     async def parse_video_card(self, video_card: pyppeteer.element_handle.ElementHandle) -> VideoInfo:
         """
@@ -25,6 +25,16 @@ class YoutubePageParser:
         """
         return await self._video_info_parser.parse(video_card)
 
+    async def parse_video_page_meta_info(self) -> dict:
+        """
+        Parse the video page to get the meta info.
+
+        :return: (dict) the meta info
+        """
+        if not YoutubeUrlParser.is_video_url(self._video_comment_parser.agent.url):
+            raise ValueError(f"The url {self._video_comment_parser.agent.url} is not a video url.")
+        return await self._video_comment_parser.parse_meta_info()
+
     async def parse_video_comment(self, comment: pyppeteer.element_handle.ElementHandle) -> VideoComment:
         """
         Parse the video comment element to get the comment text.
@@ -32,7 +42,7 @@ class YoutubePageParser:
         :param comment: (pyppeeteer.element_handle.ElementHandle) the video comment element
         :return: (str) the comment text
         """
-        return await self._video_comment_parser.parse(comment)
+        return await self._video_comment_parser.parse_comment_card(comment)
 
 
 __all__ = ["YoutubePageParser"]
