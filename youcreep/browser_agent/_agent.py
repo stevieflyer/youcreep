@@ -4,7 +4,8 @@ import pyppeteer.element_handle
 from zephyrion.pypp import PyppeteerAgent
 
 from youcreep.config.filter_enum import FilterSection
-from youcreep.page_parser.selectors.common import search_input_sel, clear_input_btn_selector, search_submit_sel, dismiss_premium_btn
+from youcreep.page_parser.selectors.common import search_input_sel, clear_input_btn_selector, search_submit_sel, \
+    dismiss_premium_btn
 from youcreep.page_parser.selectors.search_result_page import filter_toggle_sel, filter_section_sel, filter_option_sel
 from youcreep.page_parser.modules.url_parser import YoutubeUrlParser
 
@@ -125,7 +126,13 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         :return: (List[ElementHandle]) The list of video card elements.
         """
         video_selector = "ytd-video-renderer"
-        return await self.page_interactor.scroll_load_selector(selector=video_selector, threshold=n_target, same_th=50)
+        video_list = await self.page_interactor.scroll_load_selector(selector=video_selector, threshold=n_target,
+                                                                     same_th=50)
+
+        if n_target is not None:
+            video_list = video_list[:n_target]
+
+        return video_list
 
     async def scroll_load_comments(self, n_target: int) -> List[pyppeteer.element_handle.ElementHandle]:
         """
@@ -140,8 +147,14 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         """
         comment_selector = "ytd-comment-renderer"
 
-        return await self.page_interactor.scroll_load_selector(selector=comment_selector, threshold=n_target,
-                                                               scroll_step=800, same_th=50, scroll_step_callback=self.expand_all_replies)
+        comment_list = await self.page_interactor.scroll_load_selector(selector=comment_selector, threshold=n_target,
+                                                                       scroll_step=800, same_th=50,
+                                                                       scroll_step_callback=self.expand_all_replies)
+
+        if n_target is not None:
+            comment_list = comment_list[:n_target]
+
+        return comment_list
 
     async def expand_all_replies(self):
         """
