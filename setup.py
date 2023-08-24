@@ -9,7 +9,7 @@ def read_requirements():
 
 setup(
     name='youcreep',
-    version='0.1.19',
+    version='0.1.21',
     packages=find_packages(exclude=['test', 'test.*']),
     install_requires=read_requirements(),
     url='https://github.com/stevieflyer/youtube_crawler',
