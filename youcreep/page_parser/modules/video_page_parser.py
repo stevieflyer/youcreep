@@ -1,4 +1,6 @@
+import re
 import pyppeteer.element_handle
+from gembox.re_utils import search_comma_sep_num
 
 from .url_parser import YoutubeUrlParser
 from youcreep.dao.pojo import VideoComment
@@ -66,12 +68,14 @@ class VideoPageParser(BaseParserHandler):
         :return: (dict) meta info
         """
         try:
-            view_count = (await self.agent.get_texts(view_count_sel))[0].strip()
+            view_count_str = (await self.agent.get_texts(view_count_sel))[0].strip()
+            view_count = search_comma_sep_num(view_count_str)
         except:
             view_count = None
             self.agent.debug_tool.warn(f"Could not find view count for video {self.agent.url}")
         try:
-            comment_count = (await self.agent.get_texts(comment_count_sel))[0].strip()
+            comment_count_str = (await self.agent.get_texts(comment_count_sel))[0].strip()
+            comment_count = search_comma_sep_num(comment_count_str)
         except:
             comment_count = None
             self.agent.debug_tool.warn(f"Could not find comment count for video {self.agent.url}")

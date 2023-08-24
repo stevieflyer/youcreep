@@ -82,12 +82,14 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         :param video_url: (str) The URL of the video.
         :return: (None)
         """
+        self.debug_tool.info(f"Going to the video page: {video_url}")
         if not (YoutubeUrlParser.is_video_url(video_url) or YoutubeUrlParser.is_short_url(video_url)):
             raise ValueError(f"The url {video_url} is not a valid video url.")
         await self.browser_manager.go(video_url)
-        for i in range(3):
-            await self.page_interactor.scroll_to_bottom()
-            await asyncio.sleep(0.02)
+        for i in range(5):
+            self.debug_tool.info(f"Scrolling to the bottom of the page for {i + 1} time(s) for loading the page...")
+            await self.page_interactor.scroll_by(x_disp=0, y_disp=5000)
+            await asyncio.sleep(0.4)
         await self.dismiss_premium_modal()
 
     async def _type_input_search_term(self, search_term: str) -> None:
@@ -232,7 +234,7 @@ class YoutubeBrowserAgent(PyppeteerAgent):
 
             await btn.click()
         except Exception:
-            self.debug_tool.warn(f"Failed to dismiss premium modal.")
+            self.debug_tool.warn(f"Failed to dismiss premium modal.(sel: {dismiss_premium_btn})")
 
 
 __all__ = ["YoutubeBrowserAgent"]
