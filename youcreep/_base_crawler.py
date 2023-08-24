@@ -90,6 +90,7 @@ class YoutubeBaseCrawler:
                               output_dir: Union[str, pathlib.Path],
                               verbose: bool,
                               headless: bool,
+                              max_retry: int = 3,
                               **crawl_args) -> None:
         """
         Generic worker function: crawl data and save it.
@@ -99,8 +100,11 @@ class YoutubeBaseCrawler:
         :param output_dir: Output directory.
         :param verbose: Whether to print debug messages.
         :param headless: Whether to run the browser in headless mode.
+        :param max_retry: Maximum number of retries.
         :param crawl_args: Arguments for the crawl operation.
         """
+        assert isinstance(max_retry, int) and max_retry > 0, f"max_retry must be a positive integer, got {max_retry}"
+
         output_dir = ensure_pathlib_path(output_dir)
         log_dir = output_dir / "logs"
         check_and_make_dir(log_dir)
@@ -110,7 +114,7 @@ class YoutubeBaseCrawler:
         debugger = FileConsoleDebugger(filepath=log_path, level=logging.INFO) if verbose else FileDebugger(filepath=log_path, level=logging.INFO)
 
         finished = False
-        n_retry, max_retry = 0, 3
+        n_retry = 0
         while n_retry < max_retry and not finished:
             try:
                 async with cls(debug_tool=debugger, headless=headless) as crawler:
