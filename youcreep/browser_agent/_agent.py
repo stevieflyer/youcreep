@@ -6,6 +6,7 @@ from zephyrion.pypp import PyppeteerAgent
 from youcreep.config.filter_enum import FilterSection
 from youcreep.page_parser.selectors.common import search_input_sel, clear_input_btn_selector, search_submit_sel, \
     dismiss_premium_btn, comment_card_sel, video_card_sel
+from youcreep.page_parser.selectors.video_page import subtitle_btn_sel
 from youcreep.page_parser.selectors.search_result_page import filter_toggle_sel, filter_section_sel, filter_option_sel
 from youcreep.page_parser.modules.url_parser import YoutubeUrlParser
 
@@ -159,6 +160,21 @@ class YoutubeBrowserAgent(PyppeteerAgent):
             comment_list = comment_list[:n_target]
 
         return comment_list
+
+    async def toggle_subtitle(self):
+        """
+        Toggle the subtitle.
+
+        But now it's not working since the pyppeteer chromium is too old to support the YouTube subtitle function
+        """
+        subtitle_btn = await self.page_interactor.get_element(selector=subtitle_btn_sel)
+        await self.click(selector=subtitle_btn_sel)
+        btn_title = await self.get_attr(subtitle_btn, "title")
+        if btn_title is not None and ("无法" in btn_title or '無法' in btn_title or "cannot" in btn_title):
+            self.debug_tool.warn(f"Failed to toggle subtitle, btn_title: {btn_title}, current url: {self.url}")
+            return False
+        else:
+            return True
 
     async def expand_all_replies(self):
         """

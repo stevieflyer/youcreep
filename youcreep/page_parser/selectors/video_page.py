@@ -12,3 +12,6 @@ comment_count_sel = "#count.ytd-comments-header-renderer"
 
 view_count_sel = "#count .view-count.ytd-video-view-count-renderer"
 """video view count"""
+
+subtitle_btn_sel = ".ytp-subtitles-button"
+"""video subtitle button"""
