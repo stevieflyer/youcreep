@@ -42,7 +42,7 @@ class YoutubePageParser:
         :param comment: (pyppeeteer.element_handle.ElementHandle) the video comment element
         :return: (str) the comment text
         """
-        return await self._video_comment_parser.parse_comment_card(comment)
+        return await self._video_comment_parser.parse_comment_card_test(comment)
 
 
 __all__ = ["YoutubePageParser"]

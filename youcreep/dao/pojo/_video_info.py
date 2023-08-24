@@ -15,6 +15,7 @@ class VideoInfo:
         self.channel_name: str = None
         self.channel_url = None
         self.desc_text: str = None
+        self.comment_count: str = None
 
     def to_dict(self):
         return {
@@ -26,7 +27,8 @@ class VideoInfo:
             "publish_time": self.publish_time,
             "channel_name": self.channel_name,
             "channel_url": self.channel_url,
-            "desc_text": self.desc_text
+            "desc_text": self.desc_text,
+            "comment_count": self.comment_count,
         }
 
     @classmethod

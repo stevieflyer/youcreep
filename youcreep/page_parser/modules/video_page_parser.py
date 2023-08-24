@@ -80,6 +80,65 @@ class VideoPageParser(BaseParserHandler):
             "comment_count": comment_count,
         }
 
+    async def parse_comment_card_test(self, comment_card: pyppeteer.element_handle.ElementHandle) -> VideoComment:
+        """
+        Parse comment info from comment card element listed in the video page.
+
+        :param comment_card: (pyppeteer.element_handle.ElementHandle) comment card element
+        :return: (VideoComment) comment info
+        """
+
+        script = """
+        function(commentCard) {
+
+            const isReply = commentCard.classList.contains('ytd-comment-replies-renderer');
+
+            const authorWrapper = commentCard.querySelector('#header-author');
+            const authorName = authorWrapper.querySelector('#author-text span').innerText.trim();
+            const authorUrl = authorWrapper.querySelector('#author-text').href;
+
+            const pubTimeWrapper = authorWrapper.querySelector('yt-formatted-string.published-time-text');
+            const timeTag = pubTimeWrapper.innerText.trim().replace("（修改过）", "");
+            const commentUrl = pubTimeWrapper.querySelector('a').href;
+
+            const thumbnailWrapper = commentCard.querySelector('#author-thumbnail');
+            const authorThumbnail = thumbnailWrapper.querySelector("img#img").src;
+
+            const contentWrapper = commentCard.querySelector('#comment-content');
+            const contentText = contentWrapper.querySelector('#content-text').innerText;
+
+            const actionWrapper = commentCard.querySelector('ytd-comment-action-buttons-renderer');
+            const likeCount = actionWrapper.querySelector('#vote-count-left').innerText.trim();
+
+            return {
+                isReply,
+                authorName,
+                authorUrl,
+                timeTag,
+                commentUrl,
+                authorThumbnail,
+                contentText,
+                likeCount
+            };
+        }
+        """
+
+        data_dict = await self.agent.page_interactor._page.evaluate(script, comment_card)
+        comment_url_parsed = YoutubeUrlParser.parse_url(data_dict['commentUrl'])
+
+        return VideoComment.from_dict({
+            'is_reply': data_dict['isReply'],
+            'author_name': data_dict['authorName'],
+            'author_url': data_dict['authorUrl'],
+            'publish_time': data_dict['timeTag'],
+            'comment_id': comment_url_parsed['comment_id'],
+            'parent_comment_id': comment_url_parsed['parent_comment_id'],
+            'video_id': comment_url_parsed['video_id'],
+            'author_thumbnail': data_dict['authorThumbnail'],
+            'content_text': data_dict['contentText'],
+            'like_count': data_dict['likeCount']
+        })
+
     async def _is_reply(self, comment_card: pyppeteer.element_handle.ElementHandle) -> bool:
         """
         Check if the comment is a reply to another comment.

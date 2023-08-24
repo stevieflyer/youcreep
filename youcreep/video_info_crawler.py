@@ -14,6 +14,13 @@ class YoutubeVideoInfoCrawler(YoutubeBaseCrawler):
     """
 
     async def crawl(self, search_term: str, n_target: int, filter_options: dict = None) -> List[VideoInfo]:
+        """
+        Crawl the video infos from YouTube search result page.
+
+        :param search_term: (str) The search term.
+        :param n_target: (int) Target number of results, which may not be reached. If None, all results will be crawled.
+        :param filter_options: (dict) Filter options for the search result.
+        """
         # search for the search term
         await self._browser_agent.search(search_term=search_term)
         # filter the search result
@@ -30,10 +37,28 @@ class YoutubeVideoInfoCrawler(YoutubeBaseCrawler):
         # load the search result
         video_card_elem_list = await self._browser_agent.scroll_load_video_cards(n_target=n_target)
         # Parse and get the video info
+        self._browser_agent.debug_tool.info(f"Start parsing the video cards...")
         video_card_list = [await self._page_parser.parse_video_card(video_card_elem) for video_card_elem in
                            video_card_elem_list]
 
+        # if crawl_details:
+        #     self._browser_agent.debug_tool.info(f"Start crawling the video details...")
+        #     for video_card in video_card_list:
+        #         new_video_card_dict: dict = await self._crawl_video_meta_info(video_card.to_dict())
+        #         video_card.view_count = new_video_card_dict['view_count']
+        #         video_card.comment_count = new_video_card_dict['comment_count']
+
         return video_card_list
+
+    # async def _crawl_video_meta_info(self, video_info: dict):
+    #     self._browser_agent.debug_tool.info(f"Crawling the video meta info of {video_info['video_id']}...")
+    #     url = video_info["video_url"]
+    #     await self._browser_agent.go(url)
+    #     meta_info: dict = await self._page_parser.parse_video_page_meta_info()
+    #     # update the video card by meta_info
+    #     video_info["view_count"] = meta_info["view_count"]
+    #     video_info["comment_count"] = meta_info["comment_count"]
+    #     return video_info
 
     @classmethod
     def required_fields(cls) -> Dict:
