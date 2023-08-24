@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Callable
 
 import pyppeteer.element_handle
@@ -69,6 +70,25 @@ class YoutubeBrowserAgent(PyppeteerAgent):
             raise RuntimeError(f"Failed to search for {search_term} after {max_retry} retries.")
         else:
             self.debug_tool.info(f"Search for {search_term} successfully after {n_retry} retries.")
+
+    async def go_video_page(self, video_url: str) -> None:
+        """
+        Go to the video page.
+
+        @in_page: any YouTube page
+
+        @out_page: video page
+
+        :param video_url: (str) The URL of the video.
+        :return: (None)
+        """
+        if not (YoutubeUrlParser.is_video_url(video_url) or YoutubeUrlParser.is_short_url(video_url)):
+            raise ValueError(f"The url {video_url} is not a valid video url.")
+        await self.browser_manager.go(video_url)
+        for i in range(3):
+            await self.page_interactor.scroll_to_bottom()
+            await asyncio.sleep(0.02)
+        await self.dismiss_premium_modal()
 
     async def _type_input_search_term(self, search_term: str) -> None:
         """

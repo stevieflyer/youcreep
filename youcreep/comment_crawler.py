@@ -1,4 +1,5 @@
 import pathlib
+import time
 from typing import Dict
 
 from ._base_crawler import YoutubeBaseCrawler
@@ -19,19 +20,26 @@ class YoutubeCommentCrawler(YoutubeBaseCrawler):
         """
         assert YoutubeUrlParser.is_video_url(video_url) is True, "The url is not a video url."
 
-        await self._browser_agent.go(video_url)
+        await self._browser_agent.go_video_page(video_url=video_url)
 
-        # load the search result
-        comment_card_list = await self._browser_agent.scroll_load_comments(n_target=n_target)
-
-        await self._browser_agent.dismiss_premium_modal()
-
-        # get meta info
+        # Get the meta info of the video
         meta_info = await self._page_parser.parse_video_page_meta_info()
         self._browser_agent.debug_tool.info(f"View Count: {meta_info['view_count']}, Comment Count: {meta_info['comment_count']}")
 
+        if n_target is not None:
+            n_target = min(n_target, meta_info["comment_count"])
+
+        self._browser_agent.debug_tool.info(f"Start loading comments by scrolling...n_target = {n_target}")
+        before_scroll = time.time()
+        # Scroll and load all comments
+        comment_card_list = await self._browser_agent.scroll_load_comments(n_target=n_target)
+        self._browser_agent.debug_tool.info(f"Loading comments finished, time elapsed: {time.time() - before_scroll:.2f}s, loading {len(comment_card_list)} comments. Avg: {(time.time() - before_scroll) / len(comment_card_list):.2f}s/comment.")
+
         # Parse and get the video info
+        self._browser_agent.debug_tool.info(f"Start parsing the comment cards...")
+        before_parse = time.time()
         comment_list = [await self._page_parser.parse_video_comment(comment_card) for comment_card in comment_card_list]
+        self._browser_agent.debug_tool.info(f"Parsing comments finished, time elapsed: {time.time() - before_parse:.2f}s, parsing {len(comment_list)} comments. Avg: {(time.time() - before_parse) / len(comment_list):.2f}s/comment.")
 
         if ret_meta_info:
             return comment_list, ret_meta_info
