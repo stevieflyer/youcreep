@@ -26,6 +26,9 @@ class YoutubeCommentCrawler(YoutubeBaseCrawler):
         meta_info = await self._page_parser.parse_video_page_meta_info()
         self._browser_agent.debug_tool.info(f"View Count: {meta_info['view_count']}, Comment Count: {meta_info['comment_count']}")
 
+        if meta_info["comment_count"] is not None and meta_info["comment_count"] == 0:
+            return []
+
         n_target = meta_info["comment_count"] if n_target is None else min(n_target, meta_info["comment_count"])
 
         self._browser_agent.debug_tool.info(f"Start loading comments by scrolling...n_target = {n_target}")
