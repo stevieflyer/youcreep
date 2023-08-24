@@ -9,7 +9,7 @@ from gembox.debug_utils import Debugger, FileConsoleDebugger, FileDebugger
 
 from youcreep.page_parser import YoutubePageParser
 from youcreep.browser_agent import YoutubeBrowserAgent
-from gembox.multiprocess.mp_async import Task, ParallelExecutor
+from gembox.multiprocess import Task, ParallelExecutor
 
 
 class YoutubeBaseCrawler:

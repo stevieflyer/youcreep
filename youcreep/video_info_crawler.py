@@ -1,6 +1,6 @@
 import asyncio
 import pathlib
-from typing import List, Dict, Optional, Union
+from typing import List, Dict
 
 from .dao.pojo import VideoInfo
 from ._base_crawler import YoutubeBaseCrawler

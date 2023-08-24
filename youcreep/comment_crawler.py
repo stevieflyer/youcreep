@@ -1,7 +1,6 @@
 import pathlib
-from typing import List, Dict
+from typing import Dict
 
-from .dao.pojo import VideoComment
 from ._base_crawler import YoutubeBaseCrawler
 from .page_parser.modules import YoutubeUrlParser
 
