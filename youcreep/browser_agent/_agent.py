@@ -83,7 +83,7 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         :param initial_scroll: (int) The number of times to scroll to the bottom of the page for loading the page.
         :return: (None)
         """
-        self.debug_tool.info(f"Going to the video page: {video_url}")
+        self.debug_tool.info(f"Going to the video page: {video_url}, with initial_scroll: {initial_scroll}")
         if not (YoutubeUrlParser.is_video_url(video_url) or YoutubeUrlParser.is_short_url(video_url)):
             raise ValueError(f"The url {video_url} is not a valid video url.")
         await self.browser_manager.go(video_url)
