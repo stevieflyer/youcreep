@@ -71,7 +71,7 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         else:
             self.debug_tool.info(f"Search for {search_term} successfully after {n_retry} retries.")
 
-    async def go_video_page(self, video_url: str) -> None:
+    async def go_video_page(self, video_url: str, initial_scroll: int = 5) -> None:
         """
         Go to the video page.
 
@@ -80,15 +80,17 @@ class YoutubeBrowserAgent(PyppeteerAgent):
         @out_page: video page
 
         :param video_url: (str) The URL of the video.
+        :param initial_scroll: (int) The number of times to scroll to the bottom of the page for loading the page.
         :return: (None)
         """
         self.debug_tool.info(f"Going to the video page: {video_url}")
         if not (YoutubeUrlParser.is_video_url(video_url) or YoutubeUrlParser.is_short_url(video_url)):
             raise ValueError(f"The url {video_url} is not a valid video url.")
         await self.browser_manager.go(video_url)
-        for i in range(5):
-            self.debug_tool.info(f"Scrolling to the bottom of the page for {i + 1} time(s) for loading the page...")
-            await self.page_interactor.scroll_by(x_disp=0, y_disp=5000)
+        for i in range(initial_scroll):
+            if i % 4 == 0:
+                self.debug_tool.info(f"Scrolling to the bottom of the page for {i + 1} time(s) for loading the page...")
+            await self.page_interactor.scroll_by(x_disp=0, y_disp=2000)
             await asyncio.sleep(0.4)
         await self.dismiss_premium_modal()
 

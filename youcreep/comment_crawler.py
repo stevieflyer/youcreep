@@ -20,7 +20,7 @@ class YoutubeCommentCrawler(YoutubeBaseCrawler):
         """
         assert YoutubeUrlParser.is_video_url(video_url) is True, "The url is not a video url."
 
-        await self._browser_agent.go_video_page(video_url=video_url)
+        await self._browser_agent.go_video_page(video_url=video_url, initial_scroll=12)
 
         # Get the meta info of the video
         meta_info = await self._page_parser.parse_video_page_meta_info()
