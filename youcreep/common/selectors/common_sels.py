@@ -18,5 +18,5 @@ clear_input_btn_selector = "#search-clear-button > ytd-button-renderer > yt-butt
 search_submit_sel = "#search-icon-legacy"
 """search submit button"""
 
-dismiss_premium_btn = "#dismiss-button > yt-button-renderer > yt-button-shape > button"
-"""dismiss premium modal button"""
+dismiss_btn_sel = "#dismiss-button"
+"""dismiss premium button, this button may pop up when you first visit a video page or other pages"""

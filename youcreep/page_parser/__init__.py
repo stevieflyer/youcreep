@@ -1,1 +1,4 @@
-from ._main import YoutubePageParser
+from .video_page_parser import VideoPageParser
+
+
+__all__ = ['VideoPageParser']

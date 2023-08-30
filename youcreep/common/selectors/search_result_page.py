@@ -8,3 +8,5 @@ filter_section_sel = "#options > ytd-search-filter-group-renderer"
 
 filter_option_sel = "ytd-search-filter-renderer"
 """search filter option"""
+
+video_card_sel = "ytd-video-renderer"

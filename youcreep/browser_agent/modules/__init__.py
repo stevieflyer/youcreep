@@ -1,0 +1,4 @@
+from .short_page_handler import ShortPageHandler
+from .video_page_handler import VideoPageHandler
+from .common_page_handler import CommonPageHandler
+from .search_page_handler import SearchPageHandler

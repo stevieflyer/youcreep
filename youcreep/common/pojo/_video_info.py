@@ -12,6 +12,7 @@ class VideoInfo:
         self.is_short: bool = None
         self.view_count = None
         self.publish_time = None
+        self.duration = None
         self.channel_name: str = None
         self.channel_url = None
         self.desc_text: str = None
@@ -25,6 +26,7 @@ class VideoInfo:
             "is_short": self.is_short,
             "view_count": self.view_count,
             "publish_time": self.publish_time,
+            "duration": self.duration,
             "channel_name": self.channel_name,
             "channel_url": self.channel_url,
             "desc_text": self.desc_text,
