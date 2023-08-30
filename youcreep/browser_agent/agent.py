@@ -1,5 +1,6 @@
 import pathlib
 
+import playwright.async_api
 from wrightyrion.agent import Agent
 from gembox.debug_utils import Debugger
 from wrightyrion.browser_mgr import SingleBrowserManager
@@ -125,6 +126,10 @@ class YoutubeAgent:
     @property
     def browser_mgr(self) -> SingleBrowserManager:
         return self._agent.browser_mgr
+
+    @property
+    def page(self) -> playwright.async_api.Page:
+        return self._agent.page
 
 
 __all__ = ['YoutubeAgent']
