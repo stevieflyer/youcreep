@@ -42,7 +42,7 @@ class YoutubeVideoInfoCrawler(YoutubeBaseCrawler):
         filter_options = kwargs.pop("filter_options", None)
 
         if filter_options is not None:
-            filter_str = "_".join([str(filter_option.value) for filter_option in filter_options.values()])
+            filter_str = "_".join([str(filter_option.name) for filter_option in filter_options.values()])
         else:
             filter_str = "NoOption"
 

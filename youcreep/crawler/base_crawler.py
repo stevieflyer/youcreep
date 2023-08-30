@@ -167,7 +167,7 @@ class YoutubeBaseCrawler(abc.ABC):
         # for each optional_field, it can be ommited in the crawl_args
         for field_name, field_type in cls.optional_fields().items():
             if field_name in crawl_args:
-                assert isinstance(crawl_args[field_name], field_type), f"{field_name} should be {field_type}, but got {crawl_args[field_name].__class__.__name__}"
+                assert isinstance(crawl_args[field_name], field_type), f"{field_name} should be {field_type}, but got {crawl_args[field_name].__class__.__name__}, value: {crawl_args[field_name]}"
 
     @classmethod
     @abc.abstractmethod
