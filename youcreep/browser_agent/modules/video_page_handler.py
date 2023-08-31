@@ -1,6 +1,6 @@
 import asyncio
 import playwright.async_api
-from typing import List, Callable, Union
+from typing import List, Callable
 
 from gembox.re_utils import search_comma_sep_num
 
@@ -97,7 +97,7 @@ class VideoPageHandler(PageHandler):
             comment_count = search_comma_sep_num(comment_count_str)
         except:
             comment_count = None
-            self.agent.debug_tool.warn(f"Could not find comment count for video {self.agent.url}")
+            self.agent.debug_tool.warn(f"Could not find comment count for video {self.agent.page.url}")
         return {
             "view_count": view_count,
             "comment_count": comment_count,
