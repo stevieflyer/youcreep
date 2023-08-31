@@ -6,7 +6,7 @@ from .base_crawler import YoutubeBaseCrawler
 
 
 class YoutubeVideoInfoCrawler(YoutubeBaseCrawler):
-    async def crawl(self, search_term: str, n_target: int, save_dir: (str, pathlib.Path), filter_options: dict = None):
+    async def _crawl(self, search_term: str, n_target: int, save_dir: (str, pathlib.Path), filter_options: dict = None):
         """
         Crawl the video info from YouTube search result page.
 
@@ -16,8 +16,6 @@ class YoutubeVideoInfoCrawler(YoutubeBaseCrawler):
         :param filter_options: (dict) Filter options for the search result.
         :return: (List[VideoInfo]) the video info list
         """
-        if self.is_running is False:
-            raise RuntimeError("Please start the crawler first.")
         save_dir = check_and_make_dir(save_dir)
 
         # search for the search term
@@ -32,11 +30,11 @@ class YoutubeVideoInfoCrawler(YoutubeBaseCrawler):
         await self.browser_agent.search_hdl.scroll_load_video_cards(n_target=n_target)
 
         # save to the disk
-        save_name = f"{self._file_name(search_term=search_term, n_target=n_target, filter_options=filter_options)}.html"
+        save_name = f"{self._crawler_args_str(search_term=search_term, n_target=n_target, filter_options=filter_options)}.html"
         await self.browser_agent.download_page(file_path=save_dir / save_name)
 
     @classmethod
-    def _file_name(cls, **kwargs) -> str:
+    def _crawler_args_str(cls, **kwargs) -> str:
         search_term = kwargs.pop("search_term")
         n_target = kwargs.pop("n_target")
         filter_options = kwargs.pop("filter_options", None)

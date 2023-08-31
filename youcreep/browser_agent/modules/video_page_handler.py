@@ -112,7 +112,7 @@ class VideoPageHandler(PageHandler):
         - get the last 10 `more_reply_btns` and `more_btns`
         - click on each of them
         """
-        self.debug_tool.info(f"Expanding all replies...")
+        self.debug_tool.debug(f"Expanding all replies...")
         js_code = '''() => {
             let more_reply_btns = Array.from(document.querySelectorAll("#more-replies > yt-button-shape > button > yt-touch-feedback-shape > div[aria-hidden='true']")).slice(-20);
             let more_btns = Array.from(document.querySelectorAll("#button > ytd-button-renderer > yt-button-shape > button > yt-touch-feedback-shape > div")).slice(-20);
@@ -128,7 +128,7 @@ class VideoPageHandler(PageHandler):
             }
         }'''
         await self.agent.page_interactor.page.evaluate(js_code)
-        self.debug_tool.info(f"Expanding all replies finished")
+        self.debug_tool.debug(f"Expanding all replies finished")
 
 
 __all__ = ['VideoPageHandler']

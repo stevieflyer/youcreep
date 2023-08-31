@@ -46,7 +46,7 @@ class CommonPageHandler(PageHandler):
         :param encoding: (str) the file encoding, default is 'utf-8'
         :return:
         """
-        return await self.agent.page_interactor.download_page(file_path=file_path, encoding=encoding)
+        return await self.agent.page_interactor.download_html(file_path=file_path, encoding=encoding)
 
 
 __all__ = ["CommonPageHandler"]

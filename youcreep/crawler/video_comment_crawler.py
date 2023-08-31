@@ -1,15 +1,18 @@
+import asyncio
 import pathlib
 from typing import Union
 
 from gembox.io import check_and_make_dir
 
-from .base_crawler import YoutubeBaseCrawler
-from youcreep.common import YoutubeUrlParser
-from ..browser_agent.url_parser import YouTubeUrlType
+from youcreep.common import YoutubeUrlParser, YouTubeUrlType
+from youcreep.crawler.base_crawler import YoutubeBaseCrawler
 
 
 class YoutubeCommentCrawler(YoutubeBaseCrawler):
-    async def crawl(self, video_url: str, save_dir: Union[str, pathlib.Path], n_target: Union[int, None] = None):
+    async def _crawl(self,
+                     video_url: str,
+                     save_dir: Union[str, pathlib.Path],
+                     n_target: Union[int, None] = None) -> None:
         """
         Crawl the video info from YouTube search result page.
 
@@ -19,8 +22,6 @@ class YoutubeCommentCrawler(YoutubeBaseCrawler):
 
         :return: (None)
         """
-        if self.is_running is False:
-            raise RuntimeError("Please start the crawler first.")
         save_dir = check_and_make_dir(save_dir)
 
         parsed_result = YoutubeUrlParser.parse_url(video_url)
@@ -32,23 +33,21 @@ class YoutubeCommentCrawler(YoutubeBaseCrawler):
 
         # load the comment
         if url_type == YouTubeUrlType.VIDEO:
-            await self.browser_agent.video_hdl.scroll_load_comment_cards(n_target=n_target)
+            comments = await self.browser_agent.video_hdl.scroll_load_comment_cards(n_target=n_target)
         else:
-            raise NotImplementedError(f"Short video comment crawler is not implemented yet.")
+            comments = await self.browser_agent.short_hdl.scroll_load_comment_cards(n_target=n_target)
 
         # save to the disk
-        save_name = f"{self._file_name(video_url=video_url, n_target=n_target)}.html"
-        await self.browser_agent.download_page(file_path=save_dir / save_name)
-
-    @classmethod
-    def _file_name(cls, **kwargs) -> str:
-        video_url = kwargs.pop("video_url")
-        n_target = kwargs.pop("n_target", None)
-
-        parsed_result = YoutubeUrlParser.parse_url(video_url)
-        video_type, video_id = parsed_result['type'], parsed_result['video_id']
-
-        return f"{video_id}_{n_target}_{video_type.value}_video"
+        if len(comments) > 0:
+            save_name = f"{self._crawler_args_str(video_url=video_url, n_target=n_target)}.html"
+            await self.browser_agent.download_page(file_path=save_dir / save_name)
+        else:
+            self.debug_tool.warn(f"No comment is found in the video page.")
+            # 写一个空文件
+            save_name = f"EMPTY_{self._crawler_args_str(video_url=video_url, n_target=n_target)}.html"
+            with open(save_dir / save_name, 'w') as f:
+                f.write("")
+            self.debug_tool.info(f"Empty file is saved to {save_dir / save_name}")
 
     @classmethod
     def required_fields(cls) -> dict:
@@ -62,6 +61,16 @@ class YoutubeCommentCrawler(YoutubeBaseCrawler):
         return {
             "n_target": (int, type(None)),
         }
+
+    @classmethod
+    def _crawler_args_str(cls, **kwargs) -> str:
+        video_url = kwargs.pop("video_url")
+        n_target = kwargs.pop("n_target", None)
+
+        parsed_result = YoutubeUrlParser.parse_url(video_url)
+        video_type, video_id = parsed_result['type'], parsed_result['video_id']
+
+        return f"{video_id}_{n_target}_{video_type.value}_video"
 
 
 __all__ = ['YoutubeCommentCrawler']

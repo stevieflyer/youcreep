@@ -1,5 +1,7 @@
 import asyncio
 
+from gembox.re_utils import search_float_num
+
 from youcreep.browser_agent.url_parser import YouTubeUrlType
 from youcreep.browser_agent.modules.page_handler import PageHandler
 from youcreep.common.selectors.short_page_sels import comment_btn_sel, more_reply_btn_sel, comment_count_sel, like_count_sel, comment_sel
@@ -34,8 +36,13 @@ class ShortPageHandler(PageHandler):
         assert self.check_url() is True
 
         self.debug_tool.info(f"Opening comment panel...")
-        await self.agent.page.click(selector=comment_btn_sel)
-        self.debug_tool.info(f"Opening comment panel successfully")
+        if await self.agent.page.is_enabled(comment_btn_sel):
+            await self.agent.page.click(selector=comment_btn_sel)
+            self.debug_tool.info(f"Opening comment panel successfully")
+            return True
+        else:
+            self.debug_tool.warn(f"Cannot open comment panel, because the comment button is disabled.")
+            return False
 
     async def show_more_replies(self):
         """
@@ -55,19 +62,48 @@ class ShortPageHandler(PageHandler):
 
         :return: (dict) {'comment_count': str, 'like_count': str }
         """
-        comment_count = await (await self.agent.page.query_selector(comment_count_sel)).text_content()
-        like_count = await (await self.agent.page.query_selector(like_count_sel)).text_content()
+        comment_count_str = await (await self.agent.page.query_selector(comment_count_sel)).text_content()
+        like_count_str = await (await self.agent.page.query_selector(like_count_sel)).text_content()
+
+        try:
+            comment_count = search_float_num(comment_count_str)
+            if '万' in comment_count_str or '萬' in comment_count_str:
+                comment_count *= 10000
+            comment_count = int(comment_count)
+        except:
+            self.debug_tool.warn(f"Cannot parse comment_count: {comment_count_str}, set to 0")
+            comment_count = 0
+        try:
+            like_count = search_float_num(like_count_str)
+            if '万' in like_count_str or '萬' in like_count_str:
+                like_count *= 10000
+            like_count = int(like_count)
+        except:
+            self.debug_tool.warn(f"Cannot parse like_count: {like_count_str}, set to 0")
+            like_count = 0
+
+        self.debug_tool.info(f"parse_meta_info: comment_count: {comment_count}, like_count: {like_count}")
 
         return {
             'comment_count': comment_count,
             'like_count': like_count,
         }
 
-    async def load_all_comments(self):
+    async def scroll_load_comment_cards(self, n_target: int = None):
         # Step 1: 打开评论面板
-        await self.open_comment_panel()
+        if not await self.open_comment_panel():
+            self.debug_tool.info(f"Comment panel is disabled, skip loading comments.")
+            return []
         meta_info = await self.parse_meta_info()
         comment_count = int(meta_info['comment_count'])
+        if n_target is None:
+            n_target = comment_count
+        else:
+            n_target = min(n_target, comment_count)
+        if n_target == 0:
+            self.debug_tool.info(f"No comment is found, skip loading comments.")
+            return []
+
         await self.agent.page.wait_for_selector(comment_sel)
         await asyncio.sleep(1.5)
 
@@ -82,8 +118,8 @@ class ShortPageHandler(PageHandler):
             self.debug_tool.info(f"Loaded {len(comments)} comments, previous value: {n_comments}, same_count: {same_count}, same_th: {same_th}")
             if len(comments) == n_comments:
                 same_count += 1
-            if len(comments) >= comment_count or same_count >= same_th:
-                self.debug_tool.info(f"Loaded all comments, total {len(comments)} comments, target: {comment_count}, same_count: {same_count}, same_th: {same_th}")
+            if len(comments) > n_target or same_count >= same_th:
+                self.debug_tool.info(f"Loaded enough comments, total {len(comments)} comments, target: {n_target}, same_count: {same_count}, same_th: {same_th}")
                 break
             n_comments = len(comments)
             if n_comments > 0:
