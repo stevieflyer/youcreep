@@ -1,9 +1,11 @@
 import asyncio
 import pathlib
+import aiofiles
 from typing import Union
 
 from gembox.io import check_and_make_dir
 
+from youcreep.browser_agent.modules import VideoPageHandler, ShortPageHandler
 from youcreep.common import YoutubeUrlParser, YouTubeUrlType
 from youcreep.crawler.base_crawler import YoutubeBaseCrawler
 
@@ -27,27 +29,54 @@ class YoutubeCommentCrawler(YoutubeBaseCrawler):
         parsed_result = YoutubeUrlParser.parse_url(video_url)
         url_type = parsed_result['type']
         assert url_type == YouTubeUrlType.SHORT or url_type == YouTubeUrlType.VIDEO, f"Invalid url type: {url_type}, it should be either SHORT or VIDEO."
+        handler: Union[VideoPageHandler, ShortPageHandler] = self.browser_agent.video_hdl if url_type == YouTubeUrlType.VIDEO else self.browser_agent.short_hdl
 
-        # go to the target video page
-        await self.browser_agent.go_youtube_page(url=video_url)
+        # Step 1: go to the target video page
+        n_retry, max_retry = 0, 3
+        while True:
+            await self.browser_agent.go_youtube_page(url=video_url)
+            await asyncio.sleep(1)  # 等待 meta info 区域的出现
 
-        # load the comment
-        if url_type == YouTubeUrlType.VIDEO:
-            comments = await self.browser_agent.video_hdl.scroll_load_comment_cards(n_target=n_target)
-        else:
-            comments = await self.browser_agent.short_hdl.scroll_load_comment_cards(n_target=n_target)
+            # Step 2: 获取 meta info
+            meta_info = await handler.parse_meta_info()
+            # FIXME: meta_info["comment_count"] could be NoneType
+            n_comments = int(meta_info['comment_count'])
+            if n_target is None:
+                n_target = n_comments
+            else:
+                n_target = min(n_target, n_comments)
+            self.debug_tool.info(f"Meta Info is parsed: {meta_info}, we set n_target to {n_target}")
 
-        # save to the disk
-        if len(comments) > 0:
-            save_name = f"{self._crawler_args_str(video_url=video_url, n_target=n_target)}.html"
-            await self.browser_agent.download_page(file_path=save_dir / save_name)
-        else:
-            self.debug_tool.warn(f"No comment is found in the video page.")
-            # 写一个空文件
-            save_name = f"EMPTY_{self._crawler_args_str(video_url=video_url, n_target=n_target)}.html"
-            with open(save_dir / save_name, 'w') as f:
-                f.write("")
-            self.debug_tool.info(f"Empty file is saved to {save_dir / save_name}")
+            # Step 2.(1) 如果没有 comment, 直接返回
+            if n_target == 0:
+                self.debug_tool.info(f"No comment is found for {video_url}, skip.")
+                # 写一个空文件
+                save_name = f"EMPTY_{self._crawler_args_str(video_url=video_url, n_target=n_target)}.html"
+                async with aiofiles.open(save_dir / save_name, mode='w', encoding='utf-8') as f:
+                    await f.write("")
+                self.debug_tool.info(f"Empty file is saved to {save_dir / save_name}")
+                return
+
+            # Step 2.(2) 如果有 comment, 则开始爬取
+            comments = await handler.scroll_load_comment_cards(n_target=n_target)
+
+            if len(comments) > 0 and len(comments) >= int(n_target * 0.7):
+                self.debug_tool.info(f"Finally, we loaded {len(comments)} comments, n_target: {n_target}.")
+                save_name = f"{self._crawler_args_str(video_url=video_url, n_target=n_target)}.html"
+                await self.browser_agent.download_page(file_path=save_dir / save_name)
+                break
+            else:
+                n_retry += 1
+                self.debug_tool.warn(f"Finally, we loaded {len(comments)} comments, n_target: {n_target}. Which is not enough(no less than 70%).")
+                self.debug_tool.warn(f"Retry {n_retry} times...")
+                if n_retry >= max_retry:
+                    # 如果试了 max_retry 次, 都没有加载到足够的 comments, 则保存当前页面
+                    self.debug_tool.error(f"Retry {n_retry} times, but we cannot load enough comments, n_target: {n_target}.")
+                    save_name = f"NOTENOUGH_{self._crawler_args_str(video_url=video_url, n_target=n_target)}.html"
+                    await self.browser_agent.download_page(file_path=save_dir / save_name)
+                    break
+
+        self.debug_tool.info(f"YoutubeCommentCrawler crawling finished.")
 
     @classmethod
     def required_fields(cls) -> dict:

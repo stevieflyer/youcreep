@@ -62,24 +62,33 @@ class ShortPageHandler(PageHandler):
 
         :return: (dict) {'comment_count': str, 'like_count': str }
         """
-        comment_count_str = await (await self.agent.page.query_selector(comment_count_sel)).text_content()
-        like_count_str = await (await self.agent.page.query_selector(like_count_sel)).text_content()
+        # If exists comment_count_sel, parse the comment_count and like_count
 
-        try:
-            comment_count = search_float_num(comment_count_str)
-            if '万' in comment_count_str or '萬' in comment_count_str:
-                comment_count *= 10000
-            comment_count = int(comment_count)
-        except:
-            self.debug_tool.warn(f"Cannot parse comment_count: {comment_count_str}, set to 0")
+        if await self.agent.page.is_visible(comment_count_sel) is True:
+            comment_count_str = await (await self.agent.page.query_selector(comment_count_sel)).text_content()
+            try:
+                comment_count = search_float_num(comment_count_str)
+                if '万' in comment_count_str or '萬' in comment_count_str:
+                    comment_count *= 10000
+                comment_count = int(comment_count)
+            except:
+                self.debug_tool.warn(f"Cannot parse comment_count: {comment_count_str}, set to 0")
+                comment_count = 0
+        else:
+            self.debug_tool.warn(f"Cannot find comment_count_sel, set to 0")
             comment_count = 0
-        try:
-            like_count = search_float_num(like_count_str)
-            if '万' in like_count_str or '萬' in like_count_str:
-                like_count *= 10000
-            like_count = int(like_count)
-        except:
-            self.debug_tool.warn(f"Cannot parse like_count: {like_count_str}, set to 0")
+        if await self.agent.page.is_visible(comment_count_sel) is True:
+            try:
+                like_count_str = await (await self.agent.page.query_selector(like_count_sel)).text_content()
+                like_count = search_float_num(like_count_str)
+                if '万' in like_count_str or '萬' in like_count_str:
+                    like_count *= 10000
+                like_count = int(like_count)
+            except:
+                self.debug_tool.warn(f"Cannot parse like_count: {like_count_str}, set to 0")
+                like_count = 0
+        else:
+            self.debug_tool.warn(f"Cannot find like_count_sel, set to 0")
             like_count = 0
 
         self.debug_tool.info(f"parse_meta_info: comment_count: {comment_count}, like_count: {like_count}")
@@ -94,38 +103,30 @@ class ShortPageHandler(PageHandler):
         if not await self.open_comment_panel():
             self.debug_tool.info(f"Comment panel is disabled, skip loading comments.")
             return []
-        meta_info = await self.parse_meta_info()
-        comment_count = int(meta_info['comment_count'])
-        if n_target is None:
-            n_target = comment_count
-        else:
-            n_target = min(n_target, comment_count)
-        if n_target == 0:
-            self.debug_tool.info(f"No comment is found, skip loading comments.")
-            return []
-
         await self.agent.page.wait_for_selector(comment_sel)
-        await asyncio.sleep(1.5)
 
         # Step 2: 点击加载更多按钮
         n_comments, comments = 0, []
         same_count, same_th = 0, 5
+
         while True:
             self.debug_tool.info(f"Clicking all show_more_reply_btn...")
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.6)
             await self.show_more_replies()
             comments = await self.agent.page.query_selector_all(comment_sel)
-            self.debug_tool.info(f"Loaded {len(comments)} comments, previous value: {n_comments}, same_count: {same_count}, same_th: {same_th}")
+            self.debug_tool.info(f"Loaded {len(comments)} comments, previous value: {n_comments}, n_target: {n_target}, same_count: {same_count}, same_th: {same_th}")
             if len(comments) == n_comments:
                 same_count += 1
             if len(comments) > n_target or same_count >= same_th:
-                self.debug_tool.info(f"Loaded enough comments, total {len(comments)} comments, target: {n_target}, same_count: {same_count}, same_th: {same_th}")
+                self.debug_tool.info(f"Loaded enough comments, total {len(comments)} comments, n_target: {n_target}, same_count: {same_count}, same_th: {same_th}")
                 break
             n_comments = len(comments)
             if n_comments > 0:
                 last_comment = comments[-1]
                 self.debug_tool.info(f"Scrolling to last comment...")
                 await last_comment.scroll_into_view_if_needed()
+
+        self.debug_tool.info(f"Found {len(comments)} comments in the video page, n_target: {n_target}.")
         return comments
 
 

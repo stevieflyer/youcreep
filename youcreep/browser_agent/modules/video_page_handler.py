@@ -61,24 +61,25 @@ class VideoPageHandler(PageHandler):
         :param callbacks: (List[Callable]) The callback function to call after each scroll step.
         :return: (List[ElementHandle]) The list of comment card elements.
         """
-        assert isinstance(callbacks, (list, set, tuple, type(None))), f"callbacks should be a list, but got {type(callbacks)}"
-
-        meta_info = await self._parse_meta_info()
-        n_comments = meta_info["comment_count"]
-        if n_target is None:
-            n_target = n_comments
-        else:
-            n_target = min(n_target, n_comments)
+        # 0. Step 0: 参数初始化
         callbacks = [] if callbacks is None else list(callbacks)
         callbacks.extend([self.expand_all_replies])
-        comment_list = await self.agent.page_interactor.scroll_load_selector(selector=comment_card_sel, threshold=n_target, scroll_step=500, same_th=20, load_wait=400, scroll_step_callbacks=callbacks)
+
+        # 1. Step 1: 滚动到顶部
+        self.debug_tool.debug(f"Scrolling to top...")
+        await self.agent.page_interactor.scroll_to_top()
+        await asyncio.sleep(0.5)
+
+        # 2. Step 2: 持续滚动加载 comments
+        comments = await self.agent.page_interactor.scroll_load_selector(selector=comment_card_sel, threshold=n_target, scroll_step=1000, same_th=20, load_wait=400, scroll_step_callbacks=callbacks)
 
         if n_target is not None:
-            comment_list = comment_list[:n_target]
+            comments = comments[:n_target]
 
-        return comment_list
+        self.debug_tool.info(f"Found {len(comments)} comments in the video page, n_target: {n_target}.")
+        return comments
 
-    async def _parse_meta_info(self) -> dict:
+    async def parse_meta_info(self) -> dict:
         """
         Read meta info from the video detail page. (This method should be called after the first few comments are loaded)
 
@@ -98,6 +99,7 @@ class VideoPageHandler(PageHandler):
         except:
             comment_count = None
             self.agent.debug_tool.warn(f"Could not find comment count for video {self.agent.page.url}")
+        self.agent.debug_tool.info(f"parse_meta_info: view_count: {view_count}, comment_count: {comment_count}")
         return {
             "view_count": view_count,
             "comment_count": comment_count,

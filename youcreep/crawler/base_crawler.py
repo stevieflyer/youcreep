@@ -1,6 +1,6 @@
 from abc import ABC
 
-from wrightyrion.crawler import BaseCrawler
+from wrightyrion.base_class import BaseCrawler
 
 from youcreep.browser_agent import YoutubeAgent
 
