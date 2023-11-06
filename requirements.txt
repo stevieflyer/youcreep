@@ -1,8 +1,8 @@
-gembox>=0.1
-cetino>=0.1
-pandas>=1.5.3
-wrightyrion>=0.1
-setuptools>=67.8.0
-deprecated>=1.2.14
-playwright>=1.37.0
-beautifulsoup4>=4.12.2
+gembox
+cetino
+pandas
+setuptools
+deprecated
+playwright
+wrightyrion
+beautifulsoup4
